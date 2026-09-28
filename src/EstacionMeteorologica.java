@@ -1,3 +1,5 @@
+//autores: Vicente Navarrete, Osvalo Baeza
+
 package src;
 
 
@@ -34,8 +36,7 @@ public class EstacionMeteorologica {
             if (sensor.getCodigo().equalsIgnoreCase(codigo)) {
                 return false;
             }
-            if (sensor.getEstado() == Estado.ACTIVO
-                    && tipoDeSensor(sensor).equals(tipo.name())) {
+            if (sensor.getEstado() == Estado.ACTIVO && tipoDeSensor(sensor).equals(tipo.name())) {
                 return false;
             }
         }

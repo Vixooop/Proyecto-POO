@@ -1,3 +1,4 @@
+//autores: Vicente Navarrete, Dario
 package src;
 
 import java.time.LocalDateTime;
@@ -28,8 +29,8 @@ public class Medicion {
         if (!(obj instanceof Medicion)) {
             return false;
         }
-        Medicion otra = (Medicion) obj;
-        return fechaHora.equals(otra.fechaHora);
+        Medicion variable = (Medicion) obj;
+        return fechaHora.equals(variable.fechaHora);
     }
 
     @Override
