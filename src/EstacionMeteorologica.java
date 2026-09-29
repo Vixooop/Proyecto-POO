@@ -93,7 +93,7 @@ public class EstacionMeteorologica {
             }
         }
         String ubicacion = "(" + latitud + ", " + longitud + ", " + altitud + " m)";
-        return codigo + "; " + nombre + "; " + ubicacion + "; " + estado + "; " + operativos;
+        return codigo + "; " + nombre + "; " + ubicacion + "; " + estado + "; " + operativos+ ";"+comuna.getRegion().getCodigo()+";"+comuna.getCodigo();
     }
 
     public String[][] getResumenSensores() {
