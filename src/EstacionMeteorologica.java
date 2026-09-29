@@ -1,4 +1,4 @@
-//autores: Vicente Navarrete, Osvalo Baeza
+//autores: Vicente Navarrete, Osvaldo Baeza
 
 package src;
 
@@ -64,7 +64,11 @@ public class EstacionMeteorologica {
         sensores.add(nuevo);
         return true;
     }
-
+    public String getCodigo(){
+        //Autor Osvaldo --> Es necesaria para la implementacion de el metodo Comuna "findEstacionById"
+        return this.codigo;
+    }
+    
     public boolean registraMedicion(LocalDateTime fechaHora, float valor, String codigoSensor) {
         if (estado != Estado.ACTIVO) {
             return false;
