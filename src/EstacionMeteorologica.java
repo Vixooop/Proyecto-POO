@@ -64,7 +64,15 @@ public class EstacionMeteorologica {
         sensores.add(nuevo);
         return true;
     }
-
+    public String getCodigo(){
+        //Autor Osvaldo --> Es necesaria para la implementacion de el metodo Comuna "findEstacionById"
+        return this.codigo;
+    }
+        public Estado getEstado(){
+        //Autor Osvaldo --> Es necesaria para la implementacion de el metodo Comuna "getCantidadEstacionesActivas" 
+        return this.estado;
+    }
+    
     public boolean registraMedicion(LocalDateTime fechaHora, float valor, String codigoSensor) {
         if (estado != Estado.ACTIVO) {
             return false;
