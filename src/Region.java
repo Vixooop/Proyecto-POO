@@ -1,5 +1,8 @@
 package src;
-
+/*
+::::::::::::::autor Osvaldo Baeza::::::::::::::
+29/09/2026
+ */
 import java.util.ArrayList;
 import java.util.List;
 
