@@ -1,8 +1,12 @@
-import src.EstacionMeteorologica;
+package src;
+/*
+::::::::::::::autor Osvaldo Baeza::::::::::::::
+29/09/2026
+ */
 
-public class SensorTemperatura extends Sensor {
+public class SensorPrecipitacion extends Sensor {
 
-    public SensorTemperatura(String codigo, String marca, String modelo, EstacionMeteorologica estacion){
+    public SensorPrecipitacion(String codigo, String marca, String modelo, EstacionMeteorologica estacion){
         super(codigo,marca,modelo,estacion);
     }
     public float convertirCelciusAFarenheit(float valor){
@@ -10,11 +14,11 @@ public class SensorTemperatura extends Sensor {
     }
     @Override
     public String getUnidad(){
-        return "°C";
+        return "mm";
     }
     @Override
     public boolean esValorAdmisible(float valor){
-        if(valor>=-80 && valor<=60){
+        if(valor>=0 && valor<=500){
             return true;
         }else{
             return false;

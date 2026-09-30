@@ -1,5 +1,8 @@
-import src.EstacionMeteorologica;
-
+package src;
+/*
+::::::::::::::autor Osvaldo Baeza::::::::::::::
+29/09/2026
+ */
 public class SensorPresion extends Sensor {
     public SensorPresion(String codigo, String marca, String modelo, EstacionMeteorologica estacion) {
         super(codigo, marca, modelo, estacion);

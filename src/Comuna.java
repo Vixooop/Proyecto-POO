@@ -1,5 +1,5 @@
 package src;
-
+//autor Osvaldo Baeza
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,11 +10,12 @@ public class Comuna {
     private List<EstacionMeteorologica> estaciones = new ArrayList<EstacionMeteorologica>();
 
 
-    public Comuna(int codigo, String nombre, Region region) {
+    public Comuna(int codigo, String nombre, Region region){
         this.codigo = codigo;
         this.nombre = nombre;
         this.region = region;
     }
+
 
     public int getCodigo() {
         return codigo;
@@ -24,11 +25,11 @@ public class Comuna {
 
         return nombre;
     }
-
     public void addEstacion(EstacionMeteorologica estacion) {
         estaciones.add(estacion);
-    }
+        System.out.print(estaciones.size());
 
+    }
     public EstacionMeteorologica findEstacionById(String codigo) {
         EstacionMeteorologica estacionSalida = null;
         for (EstacionMeteorologica e : estaciones) {
@@ -39,16 +40,13 @@ public class Comuna {
         }
         return null;
     }
-
     public Region getRegion() {
         return this.region;
     }
 
     public int getCantidadEstaciones() {
         return estaciones.size();
-
     }
-
     public int getCantidadEstacionesActivas() {
         int cuentaActivas = 0;
         for (EstacionMeteorologica estacion : estaciones) {
