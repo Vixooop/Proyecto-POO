@@ -8,8 +8,9 @@ public final class AlertaMeteorologica {
     private final float valor;
     private final NivelAlerta nivel;
     private final String fenomeno;
+    private final Sensor sensor;
 
-    public AlertaMeteorologica(LocalDateTime fechaHora, float valor, NivelAlerta nivel, String fenomeno) {
+    public AlertaMeteorologica(LocalDateTime fechaHora, float valor, NivelAlerta nivel, String fenomeno, Sensor sensor) {
         this.fechaHora = fechaHora;
         this.valor = valor;
         this.nivel = nivel;
