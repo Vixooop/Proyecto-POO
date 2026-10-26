@@ -1,17 +1,18 @@
 package src.modelo;
-
-import src.controlador.MeteorologiaException;
 /*
 ::::::::::::::autor Osvaldo Baeza::::::::::::::
-22/10/2026
+29/09/2026
  */
+
+import src.controlador.MeteorologiaException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class Region {
-    private  int codigo;
-    private  String nombre;
+    private int codigo;
+    private String nombre;
     private List<Comuna> comunas = new ArrayList<Comuna>();
 
     public Region(int cod, String nom) {
@@ -41,7 +42,6 @@ public class Region {
         comunas.add(new Comuna(codigo, nombre, this));
     }
 
-
     public Optional<Comuna> findComunaById(int codigo) {
         for (Comuna comuna : comunas) {
             if (comuna.getCodigo() == codigo) {
@@ -50,6 +50,7 @@ public class Region {
         }
         return Optional.empty();
     }
+
     public Comuna[] getComunas() {
         return comunas.toArray(new Comuna[0]);
     }
@@ -61,4 +62,4 @@ public class Region {
         }
         return estaciones;
     }
-    }
+}
