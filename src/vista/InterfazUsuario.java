@@ -9,13 +9,11 @@ public class InterfazUsuario {
 
     private Scanner sc = new Scanner(System.in);
     private InstitutoMeteorologia instituto;
-
-    public static void main(String[] args) {
-        InterfazUsuario interfaz = new InterfazUsuario();
-        interfaz.menuPrincipal();
+    //1aquí fue borrado el antiguo main
     }
     //Creación del menú de opciones:
-    private void menuPrincipal(){
+// 2convertí el menuPrincipal a publico
+    public void menuPrincipal(){
         instituto = new InstitutoMeteorologia();
         int opcion;
         do{
