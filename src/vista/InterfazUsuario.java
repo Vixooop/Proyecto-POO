@@ -201,9 +201,8 @@ public class InterfazUsuario {
         System.exit(0);
     }
 
-    // Menu listado
 
-    public void menuListados() {
+    private void menuListados() {
         int opcion;
         do {
             mostrarTitulo("GENERAR LISTADOS");
@@ -243,8 +242,6 @@ public class InterfazUsuario {
             }
         } while (opcion != 8);
     }
-
-    // Listados
 
     private void listarRegiones() {
         mostrarTitulo("REGIONES");
@@ -350,8 +347,6 @@ public class InterfazUsuario {
         }
     }
 
-    // Métodos que se usan para la funcionalidad de cada menú
-
     private int leerOpcion(String mensaje, int minimo, int maximo) {
         while (true) {
             int opcion = leerEntero(mensaje);
@@ -395,7 +390,6 @@ public class InterfazUsuario {
         }
     }
 
-    // Lee un texto no vacío. No se permite ';' porque es el separador de los archivos de datos.
     private String leerTexto(String mensaje) {
         while (true) {
             System.out.print(mensaje);
