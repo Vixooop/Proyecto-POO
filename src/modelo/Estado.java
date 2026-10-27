@@ -1,5 +1,6 @@
 //autor: Vicente Navarrete
-package src;
+// 13-10-2026
+package modelo;
 
 public enum Estado {
     ACTIVO,

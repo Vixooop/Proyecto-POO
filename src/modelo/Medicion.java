@@ -1,15 +1,18 @@
-//autores: Vicente Navarrete, Dario
-package src;
+//autor: Vicente Navarrete
+// 19-10-2026
+package modelo;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.Objects;
 
-public class Medicion {
+public final class Medicion {
     private final LocalDateTime fechaHora;
     private final float valor;
 
     public Medicion(LocalDateTime fechaHora, float valor) {
-        this.fechaHora = fechaHora;
+        this.fechaHora = Objects.requireNonNull(fechaHora);
         this.valor = valor;
     }
 
@@ -29,13 +32,18 @@ public class Medicion {
         if (!(obj instanceof Medicion)) {
             return false;
         }
-        Medicion variable = (Medicion) obj;
-        return fechaHora.equals(variable.fechaHora);
+        Medicion otra = (Medicion) obj;
+        return fechaHora.equals(otra.fechaHora);
+    }
+
+    @Override
+    public int hashCode() {
+        return fechaHora.hashCode();
     }
 
     @Override
     public String toString() {
         DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        return fechaHora.format(formato) + "; " + valor;
+        return fechaHora.format(formato) + "; " + String.format(Locale.US, "%.1f", valor);
     }
 }

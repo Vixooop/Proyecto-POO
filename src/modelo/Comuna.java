@@ -1,4 +1,8 @@
 package modelo;
+/*
+::::::::::::::autor Osvaldo Baeza::::::::::::::
+26/10/2026
+ */
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +29,7 @@ public class Comuna {
     }
 
     public Region getRegion() {
-        return region;
+        return this.region;
     }
 
     public void addEstacion(EstacionMeteorologica estacion) {
@@ -33,9 +37,9 @@ public class Comuna {
     }
 
     public Optional<EstacionMeteorologica> findEstacionById(String codigo) {
-        for (EstacionMeteorologica estacion : estaciones) {
-            if (estacion.getCodigo().equals(codigo)) {
-                return Optional.of(estacion);
+        for (EstacionMeteorologica e : estaciones) {
+            if (e.getCodigo().equals(codigo)) {
+                return Optional.of(e);
             }
         }
         return Optional.empty();
@@ -48,7 +52,7 @@ public class Comuna {
     public int getCantidadEstacionesActivas() {
         int cuentaActivas = 0;
         for (EstacionMeteorologica estacion : estaciones) {
-            if (estacion.getEstado() == Estado.ACTIVO) {
+            if (estacion.getEstado().equals(Estado.ACTIVO)) {
                 cuentaActivas++;
             }
         }

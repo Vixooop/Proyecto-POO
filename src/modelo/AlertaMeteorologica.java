@@ -1,4 +1,5 @@
 //autor Vicente Navarrete
+// 26-10-2026
 package modelo;
 import java.time.LocalDateTime;
 
@@ -8,12 +9,14 @@ public final class AlertaMeteorologica {
     private final float valor;
     private final NivelAlerta nivel;
     private final String fenomeno;
+    private final Sensor sensor;
 
-    public AlertaMeteorologica(LocalDateTime fechaHora, float valor, NivelAlerta nivel, String fenomeno) {
+    public AlertaMeteorologica(LocalDateTime fechaHora, float valor, NivelAlerta nivel, String fenomeno, Sensor sensor) {
         this.fechaHora = fechaHora;
         this.valor = valor;
         this.nivel = nivel;
         this.fenomeno = fenomeno;
+        this.sensor = sensor;
     }
 
     public LocalDateTime getFechaHora() {

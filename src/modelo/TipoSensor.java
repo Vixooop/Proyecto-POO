@@ -1,5 +1,5 @@
-//autor: Vicente Navarrete
-package src;
+//Autor: Vicente Navarrete
+package modelo;
 
 public enum TipoSensor {
     HUMEDAD,

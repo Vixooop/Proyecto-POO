@@ -1,8 +1,16 @@
-import src.EstacionMeteorologica;
+package modelo;
 
+/*
+::::::::::::::autor Osvaldo Baeza::::::::::::::
+22/10/2026
+ */
 public class SensorPresion extends Sensor {
     public SensorPresion(String codigo, String marca, String modelo, EstacionMeteorologica estacion) {
         super(codigo, marca, modelo, estacion);
+    }
+    @Override
+    public TipoSensor getTipo() {
+        return TipoSensor.PRESION;
     }
     @Override
     public String getUnidad(){

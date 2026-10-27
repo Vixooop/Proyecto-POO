@@ -1,9 +1,14 @@
 package modelo;
+/*
+::::::::::::::autor Osvaldo Baeza::::::::::::::
+29/09/2026
+ */
+
+import controlador.MeteorologiaException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import controlador.MeteorologiaException;
 
 public class Region {
     private int codigo;
@@ -24,14 +29,16 @@ public class Region {
     }
 
     public void addComuna(int codigo, String nombre) throws MeteorologiaException {
-    if (findComunaById(codigo).isPresent()) {
-        throw new MeteorologiaException("Ya existe una comuna con el código " + codigo + "en la region " + this.nombre);
-    }
-    for (Comuna comuna : comunas) {
-        if (comuna.getNombre().equalsIgnoreCase(nombre)) {
-            throw new MeteorologiaException("Ya existe una comuna con el código " + codigo + "en la region " + this.nombre);
+        if (findComunaById(codigo).isPresent()) {
+            throw new MeteorologiaException("La region " + this.nombre
+                    + " ya tiene una comuna con el codigo " + codigo + ".");
         }
-    }
+        for (Comuna c : comunas) {
+            if (c.getNombre().equalsIgnoreCase(nombre)) {
+                throw new MeteorologiaException("La region " + this.nombre
+                        + " ya tiene una comuna con el nombre " + nombre + ".");
+            }
+        }
         comunas.add(new Comuna(codigo, nombre, this));
     }
 
