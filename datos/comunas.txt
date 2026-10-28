@@ -1,0 +1,4 @@
+16;1;Chillan
+16;2;San Carlos
+8;1;Concepcion
+8;2;Lota
