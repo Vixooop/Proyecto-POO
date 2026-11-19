@@ -6,11 +6,13 @@ package src.modelo;
 
 import src.controlador.MeteorologiaException;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Region {
+public class Region implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int codigo;
     private String nombre;
     private List<Comuna> comunas = new ArrayList<Comuna>();
@@ -18,6 +20,7 @@ public class Region {
     public Region(int cod, String nom) {
         this.codigo = cod;
         this.nombre = nom;
+        this.comunas = new ArrayList<>();
     }
 
     public int getCodigo() {
@@ -28,27 +31,18 @@ public class Region {
         return nombre;
     }
 
-    public void addComuna(int codigo, String nombre) throws MeteorologiaException {
-        if (findComunaById(codigo).isPresent()) {
-            throw new MeteorologiaException("La region " + this.nombre
-                    + " ya tiene una comuna con el codigo " + codigo + ".");
+    public void addComuna(Comuna comuna) throws MeteorologiaException {
+        if (comunas.stream().anyMatch(c -> c.getCodigo() ==(comuna.getCodigo()))) {
+            throw new MeteorologiaException("Ya existe una comuna con el código " + comuna.getCodigo()
+                    + " en la región " + codigo + ".");
         }
-        for (Comuna c : comunas) {
-            if (c.getNombre().equalsIgnoreCase(nombre)) {
-                throw new MeteorologiaException("La region " + this.nombre
-                        + " ya tiene una comuna con el nombre " + nombre + ".");
-            }
-        }
-        comunas.add(new Comuna(codigo, nombre, this));
+        comunas.add(comuna);
     }
 
-    public Optional<Comuna> findComunaById(int codigo) {
-        for (Comuna comuna : comunas) {
-            if (comuna.getCodigo() == codigo) {
-                return Optional.of(comuna);
-            }
-        }
-        return Optional.empty();
+    public Optional<Comuna> findComunaById(int codComuna) {
+        return comunas.stream()
+                .filter(c -> c.getCodigo()== codComuna)
+                .findFirst();
     }
 
     public Comuna[] getComunas() {
@@ -56,10 +50,8 @@ public class Region {
     }
 
     public int getCantidadEstaciones() {
-        int estaciones = 0;
-        for (Comuna comuna : comunas) {
-            estaciones += comuna.getEstaciones().length;
-        }
-        return estaciones;
+        return comunas.stream()
+                .mapToInt(c -> c.getEstaciones().length)
+                .sum();
     }
 }

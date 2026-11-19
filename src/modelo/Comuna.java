@@ -4,20 +4,23 @@ package src.modelo;
 26/10/2026
  */
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Comuna {
+public class Comuna implements Serializable {
     private int codigo;
     private String nombre;
     private Region region;
+    private static final long serialVersionUID = 1L;
     private List<EstacionMeteorologica> estaciones = new ArrayList<EstacionMeteorologica>();
 
     public Comuna(int codigo, String nombre, Region region) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.region = region;
+        this.estaciones = new ArrayList<>();
     }
 
     public int getCodigo() {
@@ -36,13 +39,10 @@ public class Comuna {
         estaciones.add(estacion);
     }
 
-    public Optional<EstacionMeteorologica> findEstacionById(String codigo) {
-        for (EstacionMeteorologica e : estaciones) {
-            if (e.getCodigo().equals(codigo)) {
-                return Optional.of(e);
-            }
-        }
-        return Optional.empty();
+    public Optional<EstacionMeteorologica> findEstacionById(String codEstacion) {
+        return estaciones.stream()
+                .filter(e -> e.getCodigo().equalsIgnoreCase(codEstacion))
+                .findFirst();
     }
 
     public EstacionMeteorologica[] getEstaciones() {
@@ -50,12 +50,8 @@ public class Comuna {
     }
 
     public int getCantidadEstacionesActivas() {
-        int cuentaActivas = 0;
-        for (EstacionMeteorologica estacion : estaciones) {
-            if (estacion.getEstado().equals(Estado.ACTIVO)) {
-                cuentaActivas++;
-            }
-        }
-        return cuentaActivas;
+        return (int) estaciones.stream()
+                .filter(e -> e.getEstado() == Estado.ACTIVO)
+                .count();
     }
 }
