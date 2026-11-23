@@ -1,4 +1,4 @@
-package src.modelo;
+package modelo;
 /*
 ::::::::::::::autor Osvaldo Baeza::::::::::::::
 26/10/2026
@@ -46,7 +46,7 @@ public class Comuna implements Serializable {
     }
 
     public EstacionMeteorologica[] getEstaciones() {
-        return estaciones.toArray(new EstacionMeteorologica[0]);
+        return estaciones.stream().toArray(EstacionMeteorologica[]::new);
     }
 
     public int getCantidadEstacionesActivas() {

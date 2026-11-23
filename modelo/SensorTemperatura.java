@@ -1,4 +1,4 @@
-package src.modelo;
+package modelo;
 
 import java.util.Optional;
 
@@ -8,8 +8,8 @@ import java.util.Optional;
  */
 public class SensorTemperatura extends Sensor implements Alertable{
 
-    public SensorTemperatura(String codigo, String marca, String modelo, EstacionMeteorologica estacion){
-        super(codigo,marca,modelo,estacion);
+    public SensorTemperatura(String codigo, String marca, String modelo){
+        super(codigo,marca,modelo);
     }
     public static float convertirCelsiusAFahrenheit(float valor) {
         return valor * 9.0f / 5.0f + 32.0f;

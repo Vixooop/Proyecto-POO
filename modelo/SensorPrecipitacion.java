@@ -1,4 +1,4 @@
-package src.modelo;
+package modelo;
 /*
 ::::::::::::::autor Osvaldo Baeza::::::::::::::
 22/10/2026
@@ -7,8 +7,8 @@ import java.util.Optional;
 
 public class SensorPrecipitacion extends Sensor implements Alertable  {
 
-    public SensorPrecipitacion(String codigo, String marca, String modelo, EstacionMeteorologica estacion) {
-        super(codigo, marca, modelo, estacion);
+    public SensorPrecipitacion(String codigo, String marca, String modelo) {
+        super(codigo, marca, modelo);
     }
 
     @Override

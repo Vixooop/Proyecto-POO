@@ -1,11 +1,11 @@
-package src.modelo;
+package modelo;
 /*
 ::::::::::::::autor Osvaldo Baeza::::::::::::::
 22/10/2026
  */
 public class SensorHumedad extends Sensor {
-    public SensorHumedad(String codigo, String marca, String modelo, EstacionMeteorologica estacion) {
-        super(codigo, marca, modelo, estacion);
+    public SensorHumedad(String codigo, String marca, String modelo) {
+        super(codigo, marca, modelo);
     }
     @Override
     public TipoSensor getTipo() {

@@ -1,12 +1,14 @@
-//autor: Vicente Navarrete y Osvaldo Baeza
+//autor: Vicente Navarrete
 // 19-10-2026
-package src.modelo;
+package modelo;
+
+import controlador.MeteorologiaException;
 
 import java.io.Serializable;
-import src.controlador.MeteorologiaException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Optional;
@@ -17,14 +19,12 @@ public abstract class Sensor implements Serializable {
     private String marca;
     private String modelo;
     private Estado estado;
-    private EstacionMeteorologica estacion;
     private ArrayList<Medicion> mediciones;
 
-    protected Sensor(String codigo, String marca, String modelo, EstacionMeteorologica estacion) {
+    protected Sensor(String codigo, String marca, String modelo) {
         this.codigo = codigo;
         this.marca = marca;
         this.modelo = modelo;
-        this.estacion = estacion;
         this.estado = Estado.ACTIVO;
         this.mediciones = new ArrayList<Medicion>();
     }
@@ -57,15 +57,13 @@ public abstract class Sensor implements Serializable {
             throw new MeteorologiaException("El valor " + String.format(Locale.US, "%.1f", valor) + " " + getUnidad()
                     + " no es admisible para un sensor de tipo " + getTipo() + ".");
         }
-        Medicion nueva = new Medicion(fechaHora, valor);
         if (mediciones.stream().anyMatch(m -> m.getFechaHora().equals(fechaHora))) {
             DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
             throw new MeteorologiaException("El sensor " + codigo + " ya registra una medición el "
                     + fechaHora.format(formatoFecha) + " a las " + fechaHora.format(formatoHora) + ".");
         }
-        mediciones.add(nueva);
-        mediciones.sort(Comparator.comparing(Medicion::getFechaHora));
+        mediciones.add(new Medicion(fechaHora, valor));
     }
 
     public Medicion[] getMediciones() {
@@ -75,9 +73,8 @@ public abstract class Sensor implements Serializable {
     }
 
     public Medicion[] getMedicionesBetween(LocalDateTime inicio, LocalDateTime fin) {
-        return mediciones.stream()
+        return Arrays.stream(getMediciones())
                 .filter(m -> !m.getFechaHora().isBefore(inicio) && !m.getFechaHora().isAfter(fin))
-                .sorted(Comparator.comparing(Medicion::getFechaHora))
                 .toArray(Medicion[]::new);
     }
 
@@ -88,6 +85,7 @@ public abstract class Sensor implements Serializable {
         }
         return Optional.of(new ResumenMediciones(elegidas));
     }
+
     public abstract TipoSensor getTipo();
 
     public abstract String getUnidad();

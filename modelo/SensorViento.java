@@ -1,4 +1,4 @@
-package src.modelo;
+package modelo;
 
 import java.util.Optional;
 
@@ -8,8 +8,8 @@ import java.util.Optional;
  */
 public class SensorViento extends Sensor implements Alertable{
 
-    public SensorViento(String codigo, String marca, String modelo, EstacionMeteorologica estacion){
-        super(codigo,marca,modelo,estacion);
+    public SensorViento(String codigo, String marca, String modelo){
+        super(codigo,marca,modelo);
     }
     @Override
     public TipoSensor getTipo() {

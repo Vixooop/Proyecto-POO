@@ -1,16 +1,18 @@
-package src.controlador;
+package controlador;
 /*
 ::::::::::::::autor Osvaldo Baeza::::::::::::::
 23/10/2026
  */
-import src.modelo.*;
+import modelo.*;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class InstitutoMeteorologia {
     private static InstitutoMeteorologia instancia;
@@ -31,20 +33,18 @@ public class InstitutoMeteorologia {
         if (findRegion(codigo).isPresent()) {
             throw new MeteorologiaException("Ya existe una region con el codigo " + codigo);
         }
-        for (Region r : listaRegion) {
-            if (r.getNombre().equalsIgnoreCase(nombre)) {
-                throw new MeteorologiaException("Ya existe una region con el nombre " + nombre);
-            }
+        if (listaRegion.stream().anyMatch(r -> r.getNombre().equalsIgnoreCase(nombre))) {
+            throw new MeteorologiaException("Ya existe una region con el nombre " + nombre);
         }
-        listaRegion.add(new Region(codigo, nombre.toUpperCase()));
+        listaRegion.add(new Region(codigo, nombre));
     }
+
 
     public void creaComuna(int codigo, String nombre, int codigoRegion) throws MeteorologiaException {
         regionExistente(codigoRegion).addComuna(codigo, nombre);
     }
 
-    public void creaEstacion(String codigo, String nombre, float longitud, float latitud, float altitud,
-                             int codRegion, int codComuna) throws MeteorologiaException {
+    public void creaEstacion(String codigo, String nombre, float longitud, float latitud, float altitud, int codRegion, int codComuna) throws MeteorologiaException {
         if (findEstacion(codigo).isPresent()) {
             throw new MeteorologiaException("Ya existe una estacion con el codigo " + codigo);
         }
@@ -67,7 +67,7 @@ public class InstitutoMeteorologia {
             throws MeteorologiaException {
         estacionExistente(codigoEstacion).cambiaEstadoSensor(codigoSensor, estado);
     }
-    public void cargaDatos() throws MeteorologiaException {
+    public void importaDatosTexto() throws MeteorologiaException {
         if (!listaRegion.isEmpty()) {
             throw new MeteorologiaException("La carga de datos solo puede realizarse cuando no existen datos registrados.");
         }
@@ -87,39 +87,47 @@ public class InstitutoMeteorologia {
             throw e;
         }
     }
+
+    public void cargaDatos() throws MeteorologiaException {
+        if (!listaRegion.isEmpty()) {
+            throw new MeteorologiaException("La carga de datos solo puede realizarse cuando no existen datos registrados.");
+        }
+        Object objeto = PersistenciaObjetos.leeObjeto("meteorologia.dat");
+        if (!(objeto instanceof List) || !((List<?>) objeto).stream().allMatch(o -> o instanceof Region)) {
+            throw new MeteorologiaException("El archivo meteorologia.dat no contiene datos válidos del sistema.");
+        }
+        listaRegion = ((List<?>) objeto).stream()
+                .map(Region.class::cast)
+                .collect(Collectors.toCollection(ArrayList::new));
+        listaEstacion = listaRegion.stream()
+                .flatMap(r -> Arrays.stream(r.getComunas()))
+                .flatMap(c -> Arrays.stream(c.getEstaciones()))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
     public void guardaDatos() throws MeteorologiaException {
         if (listaRegion.isEmpty()) {
             throw new MeteorologiaException("No existen datos para guardar.");
         }
-        String sep = PersistenciaTexto.SEPARADOR;
-        DateTimeFormatter formato = formatoFechaHora();
-        List<String> regiones = new ArrayList<String>();
-        List<String> comunas = new ArrayList<String>();
-        List<String> estaciones = new ArrayList<String>();
-        List<String> sensores = new ArrayList<String>();
-        List<String> mediciones = new ArrayList<String>();
-        for (Region r : listaRegion) {
-            regiones.add(r.getCodigo() + sep + r.getNombre());
-            for (Comuna c : r.getComunas()) {
-                comunas.add(r.getCodigo() + sep + c.getCodigo() + sep + c.getNombre());
-                for (EstacionMeteorologica e : c.getEstaciones()) {
-                    estaciones.add(e.getCodigo() + sep + e.getNombre() + sep + e.getPosicion() + sep + r.getCodigo() + sep + c.getCodigo());
-                    for (Sensor s : e.getSensores()) {
-                        sensores.add(e.getCodigo() + sep + s.getCodigo() + sep + s.getTipo() + sep + s.getMarca() + sep + s.getModelo() + sep + s.getEstado());
-                        for (Medicion m : s.getMediciones()) {
-                            mediciones.add(e.getCodigo() + sep + s.getCodigo() + sep + m.getFechaHora().format(formato) + sep + m.getValor());
-                        }
-                    }
-                }
-            }
-        }
-        PersistenciaTexto.escribeRegistros("regiones.txt", regiones);
-        PersistenciaTexto.escribeRegistros("comunas.txt", comunas);
-        PersistenciaTexto.escribeRegistros("estaciones.txt", estaciones);
-        PersistenciaTexto.escribeRegistros("sensores.txt", sensores);
-        PersistenciaTexto.escribeRegistros("mediciones.txt", mediciones);
+        PersistenciaObjetos.escribeObjeto("meteorologia.dat", listaRegion);
     }
-
+    public boolean existenDatos() {
+        return !listaRegion.isEmpty();
+    }
+    public String[] getCodigosEstaciones() {
+        return listaEstacion.stream()
+                .map(EstacionMeteorologica::getCodigo)
+                .sorted()
+                .toArray(String[]::new);
+    }
+    public String[] getCodigosSensores(String codEstacion) throws MeteorologiaException {
+        return Arrays.stream(estacionExistente(codEstacion).getSensores())
+                .map(Sensor::getCodigo)
+                .toArray(String[]::new);
+    }
+    public String[] getDatosSensor(String codEstacion, String codSensor) throws MeteorologiaException {
+        Sensor sensor = sensorExistente(codEstacion, codSensor);
+        return new String[]{sensor.getTipo().name(), sensor.getUnidad(), sensor.getEstado().name()};
+    }
     private void cargaRegiones(List<String[]> registros) throws MeteorologiaException {
         for (int i = 0; i < registros.size(); i++) {
             String[] campos = registros.get(i);
@@ -229,7 +237,6 @@ public class InstitutoMeteorologia {
             throw errorLinea("mediciones.txt", linea, e.getMessage());
         }
     }
-
     private void cambiaEstadoEnCarga(int linea, String codEstacion, String codSensor, Estado estado)
             throws MeteorologiaException {
         try {
@@ -242,49 +249,31 @@ public class InstitutoMeteorologia {
     private MeteorologiaException errorLinea(String archivo, int linea, String detalle) {
         return new MeteorologiaException("Linea " + linea + " del archivo " + archivo + ": " + detalle + " No se cargo ningun dato.");
     }
+
     public String[][] listaRegiones() {
-        String[][] listaRSalida = new String[listaRegion.size()][4];
-        int i = 0;
-        for (Region r : listaRegion) {
-            listaRSalida[i][0] = String.valueOf(r.getCodigo());
-            listaRSalida[i][1] = r.getNombre();
-            Comuna[] comunas = r.getComunas();
-            listaRSalida[i][2] = String.valueOf(comunas.length); //N comunas
-            listaRSalida[i][3] = String.valueOf(r.getCantidadEstaciones()); //N estaciones
-            i++;
-        }
-        return listaRSalida;
+        return listaRegion.stream()
+                .map(r -> new String[]{
+                        String.valueOf(r.getCodigo()),
+                        r.getNombre(),
+                        String.valueOf(r.getComunas().length),
+                        String.valueOf(r.getCantidadEstaciones())})
+                .toArray(String[][]::new);
     }
     public String[][] listaComunas() {
-        int totalComunas = 0;
-        for (Region r : listaRegion) {
-            Comuna[] comunas = r.getComunas();
-            totalComunas += comunas.length;
-        }
-        String[][] listaCSalida = new String[totalComunas][5];
-        int fila = 0;
-        for (Region r : listaRegion) {
-            Comuna[] comunas = r.getComunas();
-            for (int i = 0; i < comunas.length; i++) {
-                listaCSalida[fila][0] = String.valueOf(comunas[i].getCodigo());
-                listaCSalida[fila][1] = comunas[i].getNombre();
-                listaCSalida[fila][2] = r.getNombre();
-                listaCSalida[fila][3] = String.valueOf(comunas[i].getEstaciones().length);
-                listaCSalida[fila][4] = String.valueOf(comunas[i].getCantidadEstacionesActivas());
-                fila++;
-            }
-        }
-        return listaCSalida;
+        return listaRegion.stream()
+                .flatMap(r -> Arrays.stream(r.getComunas())
+                        .map(c -> new String[]{
+                                String.valueOf(c.getCodigo()),
+                                c.getNombre(),
+                                r.getNombre(),
+                                String.valueOf(c.getEstaciones().length),
+                                String.valueOf(c.getCantidadEstacionesActivas())})).toArray(String[][]::new);
     }
 
     public String[][] listaEstaciones(int codigoRegion, int codigoComuna) throws MeteorologiaException {
-        EstacionMeteorologica[] estaciones = comunaExistente(codigoRegion, codigoComuna).getEstaciones();
-        String[][] estacionSensor = new String[estaciones.length][5];
-        for (int i = 0; i < estaciones.length; i++) {
-            // toString: codigo; nombre; ubicacion; estado; sensores operativos
-            estacionSensor[i] = estaciones[i].toString().split("; ");
-        }
-        return estacionSensor;
+        return Arrays.stream(comunaExistente(codigoRegion, codigoComuna).getEstaciones())
+                .map(e -> e.toString().split("; "))
+                .toArray(String[][]::new);
     }
 
     public String[][] listaSensores(String codigoEstacion) throws MeteorologiaException {
@@ -323,51 +312,35 @@ public class InstitutoMeteorologia {
             throws MeteorologiaException {
         EstacionMeteorologica estacion = estacionExistente(codigoEstacion);
         validaPeriodo(inicio, fin);
-        AlertaMeteorologica[] alertas = estacion.getAlertasBetween(inicio, fin);
         DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
-        String[][] salida = new String[alertas.length][7];
-        for (int i = 0; i < alertas.length; i++) {
-            AlertaMeteorologica a = alertas[i];
-            salida[i][0] = a.getFechaHora().format(formatoFecha);
-            salida[i][1] = a.getFechaHora().format(formatoHora);
-            salida[i][2] = a.getSensor().getCodigo();
-            salida[i][3] = a.getFenomeno();
-            salida[i][4] = unDecimal(a.getValor());
-            salida[i][5] = a.getSensor().getUnidad();
-            salida[i][6] = a.getNivel().name();
-        }
-        return salida;
+        return Arrays.stream(estacion.getAlertasBetween(inicio, fin))
+                .map(a -> new String[]{
+                        a.getFechaHora().format(formatoFecha),
+                        a.getFechaHora().format(formatoHora),
+                        a.getSensor().getCodigo(),
+                        a.getFenomeno(),
+                        unDecimal(a.getValor()),
+                        a.getSensor().getUnidad(),
+                        a.getNivel().name()})
+                .toArray(String[][]::new);
     }
     private Optional<Region> findRegion(int codigo) {
-        for (Region r : listaRegion) {
-            if (r.getCodigo() == codigo) {
-                return Optional.of(r);
-            }
-        }
-        return Optional.empty();
+        return listaRegion.stream()
+                .filter(r -> r.getCodigo() == codigo)
+                .findFirst();
     }
     private Optional<Comuna> findComuna(int codRegion, int codComuna) {
-        Optional<Region> region = findRegion(codRegion);
-        if (!region.isPresent()) {
-            return Optional.empty();
-        }
-        return region.get().findComunaById(codComuna);
+        return findRegion(codRegion).flatMap(r -> r.findComunaById(codComuna));
     }
+
     private Optional<EstacionMeteorologica> findEstacion(String codigo) {
-        for (EstacionMeteorologica e : listaEstacion) {
-            if (e.getCodigo().equals(codigo)) {
-                return Optional.of(e);
-            }
-        }
-        return Optional.empty();
+        return listaEstacion.stream()
+                .filter(e -> e.getCodigo().equals(codigo))
+                .findFirst();
     }
     private Optional<Sensor> findSensor(String codEstacion, String codSensor) {
-        Optional<EstacionMeteorologica> estacion = findEstacion(codEstacion);
-        if (!estacion.isPresent()) {
-            return Optional.empty();
-        }
-        return estacion.get().findSensorById(codSensor);
+        return findEstacion(codEstacion).flatMap(e -> e.findSensorById(codSensor));
     }
     private Region regionExistente(int codRegion) throws MeteorologiaException {
         return findRegion(codRegion).orElseThrow(() ->
@@ -378,19 +351,19 @@ public class InstitutoMeteorologia {
         return findComuna(codRegion, codComuna).orElseThrow(() -> new MeteorologiaException("No existe una comuna con el codigo " + codComuna + " en la region " + region.getNombre() ));
     }
     private EstacionMeteorologica estacionExistente(String codEstacion) throws MeteorologiaException {
-        return findEstacion(codEstacion).orElseThrow(() -> new MeteorologiaException("No existe una estacion con el codigo " + codEstacion));
+        return findEstacion(codEstacion).orElseThrow(() -> new MeteorologiaException("No existe una estación con el código " + codEstacion + "."));
     }
 
     private Sensor sensorExistente(String codEstacion, String codSensor) throws MeteorologiaException {
         estacionExistente(codEstacion);
         return findSensor(codEstacion, codSensor).orElseThrow(() ->
-                new MeteorologiaException("No existe el sensor " + codSensor + " en la estacion " + codEstacion));
+                new MeteorologiaException("No existe el sensor " + codSensor + " en la estación " + codEstacion + "."));
     }
 
     private void validaPeriodo(LocalDateTime inicio, LocalDateTime fin) throws MeteorologiaException {
         if (fin.isBefore(inicio)) {
             DateTimeFormatter formato = formatoFechaHora();
-            throw new MeteorologiaException("La fecha y hora de termino (" + fin.format(formato) + ") es anterior a la de inicio (" + inicio.format(formato));
+            throw new MeteorologiaException("La fecha y hora de termino (" + fin.format(formato) + ") es anterior a la de inicio (" + inicio.format(formato) + ").");
         }
     }
     private DateTimeFormatter formatoFechaHora() {
