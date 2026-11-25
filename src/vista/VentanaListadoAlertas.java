@@ -130,9 +130,9 @@ public class VentanaListadoAlertas extends JDialog {
             String[][] alertas = instituto.listaAlertas(estacion, inicio, fin);
             Object[][] filas = Arrays.stream(alertas).map(a -> new Object[]{a[0], a[1], a[2], a[3], a[4] + " " + a[5], a[6]}).toArray(Object[][]::new);
             modeloTabla.setDataVector(filas, COLUMNAS);
-            lblResumen.setText("Rango: " + inicio.format(FORMATO_FECHA_HORA) + " a " + fin.format(FORMATO_FECHA_HORA) + " — " + alertas.length + (alertas.length == 1 ? " alerta." : " alertas."));
+            lblResumen.setText("Periodo: " + inicio.format(FORMATO_FECHA_HORA) + " a " + fin.format(FORMATO_FECHA_HORA) + " — " + alertas.length + (alertas.length == 1 ? " alerta." : " alertas."));
             if (alertas.length == 0) {
-                mostrarInformacion("La estación " + estacion + " no tiene alertas en el rango indicado.");
+                mostrarInformacion("La estación " + estacion + " no registra alertas en el Periodo indicado.");
             }
         } catch (MeteorologiaException e) {
             modeloTabla.setDataVector(new Object[0][], COLUMNAS);

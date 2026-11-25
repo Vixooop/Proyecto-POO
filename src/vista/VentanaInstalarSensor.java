@@ -86,7 +86,7 @@ public class VentanaInstalarSensor extends JDialog {
         String marca = txtMarca.getText().trim();
         String modelo = txtModelo.getText().trim();
         if (codigo.isEmpty() || marca.isEmpty() || modelo.isEmpty()) {
-            mostrarError("El código, la marca y el modelo estan vacíos.");
+            mostrarError("El código, la marca y el modelo no pueden estar vacíos.");
             return;
         }
         String estacion = (String) cmbEstaciones.getSelectedItem();

@@ -182,7 +182,7 @@ public class VentanaPrincipal extends JFrame {
     private void cargarDatos() {
         try {
             instituto.cargaDatos();
-            mostrarInformacion("Cargar datos", "Datos cargados desde datos/meteorologia.dat.");
+            mostrarInformacion("Cargar datos", "Datos cargados correctamente desde el archivo datos/meteorologia.dat.");
         } catch (MeteorologiaException e) {
             mostrarError(e.getMessage());
         }
@@ -202,7 +202,7 @@ public class VentanaPrincipal extends JFrame {
     private void guardarDatos() {
         try {
             instituto.guardaDatos();
-            mostrarInformacion("Guardar datos", "Datos guardados en datos/meteorologia.dat.");
+            mostrarInformacion("Guardar datos", "Datos guardados correctamente en el archivo datos/meteorologia.dat.");
         } catch (MeteorologiaException e) {
             mostrarError(e.getMessage());
         }
