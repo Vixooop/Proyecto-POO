@@ -6,8 +6,6 @@ package vista;
 import controlador.InstitutoMeteorologia;
 import controlador.MeteorologiaException;
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -16,16 +14,10 @@ import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.util.function.Supplier;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -35,10 +27,15 @@ import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
 public class VentanaPrincipal extends JFrame {
+    private static final long serialVersionUID = 1L;
+
+    private static final String[] LISTADOS = {"Regiones", "Comunas", "Estaciones de una comuna", "Sensores de una estación", "Mediciones de un sensor", "Resumen estadístico de un sensor", "Alertas de una estación"};
+    private static final int LISTADO_ALERTAS = 6;
+
     private final InstitutoMeteorologia instituto;
     private final InterfazUsuario interfaz;
     private final JLabel lblEstado = new JLabel();
-    private final JComboBox<String> cmbListados = new JComboBox<String>();
+    private final JComboBox<String> cmbListados = new JComboBox<String>(LISTADOS);
 
     public VentanaPrincipal() {
         super("Sistema de Información Meteorológica");
@@ -84,7 +81,6 @@ public class VentanaPrincipal extends JFrame {
         contenido.add(centro, BorderLayout.CENTER);
         contenido.add(inferior, BorderLayout.SOUTH);
         setContentPane(contenido);
-
         actualizarEstado();
         pack();
         setLocationRelativeTo(null);
@@ -111,11 +107,8 @@ public class VentanaPrincipal extends JFrame {
 
     private JPanel construyePanelListados() {
         JPanel panel = nuevoPanelDeBotones("Listados");
-        String[] listados = {"Regiones", "Comunas", "Estaciones de una comuna", "Sensores de una estación",
-                "Mediciones de un sensor", "Resumen estadístico de un sensor", "Alertas de una estación"};
         panel.add(new JLabel("Seleccione el listado:"));
-        llenaCombo(cmbListados, listados);
-        cmbListados.setSelectedIndex(listados.length - 1);
+        cmbListados.setSelectedIndex(LISTADO_ALERTAS);
         panel.add(cmbListados);
         agregaBoton(panel, "Generar listado", e -> generarListado());
         return panel;
@@ -153,7 +146,7 @@ public class VentanaPrincipal extends JFrame {
 
     private void abrirDialogo(Supplier<JDialog> ventana) {
         if (instituto.getCodigosEstaciones().length == 0) {
-            mostrarInformacion(this, "Información", "No existen estaciones registradas. Cree una estación antes de continuar.");
+            mostrarInformacion("Información", "No existen estaciones, cree una antes de continuar.");
             return;
         }
         ventana.get().setVisible(true);
@@ -189,9 +182,9 @@ public class VentanaPrincipal extends JFrame {
     private void cargarDatos() {
         try {
             instituto.cargaDatos();
-            mostrarInformacion(this, "Cargar datos", "Datos cargados desde el archivo datos/meteorologia.dat.");
+            mostrarInformacion("Cargar datos", "Datos cargados desde datos/meteorologia.dat.");
         } catch (MeteorologiaException e) {
-            mostrarError(this, e.getMessage());
+            mostrarError(e.getMessage());
         }
         actualizarEstado();
     }
@@ -199,9 +192,9 @@ public class VentanaPrincipal extends JFrame {
     private void importarDatosTexto() {
         try {
             instituto.importaDatosTexto();
-            mostrarInformacion(this, "Importar datos de texto", "Datos importados desde los archivos de texto de la carpeta datos/.");
+            mostrarInformacion("Importar datos de texto", "Datos importados desde datos/.");
         } catch (MeteorologiaException e) {
-            mostrarError(this, e.getMessage());
+            mostrarError(e.getMessage());
         }
         actualizarEstado();
     }
@@ -209,9 +202,9 @@ public class VentanaPrincipal extends JFrame {
     private void guardarDatos() {
         try {
             instituto.guardaDatos();
-            mostrarInformacion(this, "Guardar datos", "Datos guardados en el archivo datos/meteorologia.dat.");
+            mostrarInformacion("Guardar datos", "Datos guardados en datos/meteorologia.dat.");
         } catch (MeteorologiaException e) {
-            mostrarError(this, e.getMessage());
+            mostrarError(e.getMessage());
         }
         actualizarEstado();
     }
@@ -227,7 +220,7 @@ public class VentanaPrincipal extends JFrame {
                 try {
                     instituto.guardaDatos();
                 } catch (MeteorologiaException e) {
-                    mostrarError(this, e.getMessage());
+                    mostrarError(e.getMessage());
                     return;
                 }
             }
@@ -236,66 +229,11 @@ public class VentanaPrincipal extends JFrame {
         System.exit(0);
     }
 
-    static void mostrarError(Component padre, String mensaje) {
-        JOptionPane.showMessageDialog(padre, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    static void mostrarInformacion(Component padre, String titulo, String mensaje) {
-        JOptionPane.showMessageDialog(padre, mensaje, titulo, JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    static void llenaCombo(JComboBox<String> combo, String[] elementos) {
-        combo.setModel(new DefaultComboBoxModel<String>(elementos));
-    }
-
-    static void llenaSensores(Component padre, JComboBox<String> cmbEstaciones, JComboBox<String> cmbSensores) {
-        String[] codigos = new String[0];
-        try {
-            codigos = InstitutoMeteorologia.getInstance().getCodigosSensores((String) cmbEstaciones.getSelectedItem());
-        } catch (MeteorologiaException e) {
-            mostrarError(padre, e.getMessage());
-        }
-        llenaCombo(cmbSensores, codigos);
-    }
-
-    static LocalDateTime parseaFechaHora(Component padre, String texto) {
-        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/uuuu HH:mm").withResolverStyle(ResolverStyle.STRICT);
-        try {
-            return LocalDateTime.parse(texto.trim(), formato);
-        } catch (DateTimeParseException e) {
-            mostrarError(padre, "La fecha y hora debe tener el formato dd/MM/yyyy HH:mm.");
-            return null;
-        }
-    }
-
-    static void agregaFila(JPanel formulario, int fila, String etiqueta, JComponent componente) {
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridy = fila;
-        c.insets = new Insets(3, 5, 3, 5);
-        c.gridx = 0;
-        c.anchor = GridBagConstraints.EAST;
-        JLabel lbl = new JLabel(etiqueta);
-        lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
-        formulario.add(lbl, c);
-        c.gridx = 1;
-        c.anchor = GridBagConstraints.WEST;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.weightx = 1;
-        formulario.add(componente, c);
-    }
-
-    static JPanel panelBotones(JButton... botones) {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
-        for (JButton boton : botones) {
-            panel.add(boton);
-        }
-        return panel;
-    }
-
-    static void configuraDialogo(JDialog dialogo, JFrame owner, JButton botonPorDefecto) {
-        dialogo.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        dialogo.getRootPane().setDefaultButton(botonPorDefecto);
-        dialogo.pack();
-        dialogo.setLocationRelativeTo(owner);
+    private void mostrarInformacion(String titulo, String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, titulo, JOptionPane.INFORMATION_MESSAGE);
     }
 }

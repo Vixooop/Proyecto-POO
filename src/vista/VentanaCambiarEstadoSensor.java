@@ -1,5 +1,5 @@
 // Autor Vicente Navarrete //
-// 21/11/2026 //
+// 21/11-2026 //
 
 package vista;
 
@@ -7,27 +7,33 @@ import controlador.InstitutoMeteorologia;
 import controlador.MeteorologiaException;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import modelo.Estado;
 
 public class VentanaCambiarEstadoSensor extends JDialog {
-    private final JComboBox<String> cmbEstaciones = new JComboBox<String>();
+    private static final long serialVersionUID = 1L;
+
+    private final InstitutoMeteorologia instituto = InstitutoMeteorologia.getInstance();
+    private final JComboBox<String> cmbEstaciones = new JComboBox<String>(instituto.getCodigosEstaciones());
     private final JComboBox<String> cmbSensores = new JComboBox<String>();
     private final JLabel lblEstadoActual = new JLabel("-");
     private final ButtonGroup grupoEstados = new ButtonGroup();
 
     public VentanaCambiarEstadoSensor(JFrame owner) {
         super(owner, "Cambiar estado de sensor", true);
-        VentanaPrincipal.llenaCombo(cmbEstaciones, InstitutoMeteorologia.getInstance().getCodigosEstaciones());
 
         JPanel estados = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         for (Estado estado : Estado.values()) {
@@ -38,16 +44,27 @@ public class VentanaCambiarEstadoSensor extends JDialog {
             estados.add(radio);
         }
 
-        JPanel formulario = new JPanel(new GridBagLayout());
-        VentanaPrincipal.agregaFila(formulario, 0, "Estación:", cmbEstaciones);
-        VentanaPrincipal.agregaFila(formulario, 1, "Sensor:", cmbSensores);
-        VentanaPrincipal.agregaFila(formulario, 2, "Estado actual:", lblEstadoActual);
-        VentanaPrincipal.agregaFila(formulario, 3, "Nuevo estado:", estados);
+        JPanel etiquetas = new JPanel(new GridLayout(0, 1, 0, 6));
+        JPanel campos = new JPanel(new GridLayout(0, 1, 0, 6));
+        etiquetas.add(new JLabel("Estación:", SwingConstants.RIGHT));
+        campos.add(cmbEstaciones);
+        etiquetas.add(new JLabel("Sensor:", SwingConstants.RIGHT));
+        campos.add(cmbSensores);
+        etiquetas.add(new JLabel("Estado actual:", SwingConstants.RIGHT));
+        campos.add(lblEstadoActual);
+        etiquetas.add(new JLabel("Nuevo estado:", SwingConstants.RIGHT));
+        campos.add(estados);
+        JPanel formulario = new JPanel(new BorderLayout(6, 0));
+        formulario.add(etiquetas, BorderLayout.WEST);
+        formulario.add(campos, BorderLayout.CENTER);
 
         JButton btnCambiar = new JButton("Cambiar estado");
         JButton btnCancelar = new JButton("Cancelar");
         btnCambiar.addActionListener(e -> cambiarEstado());
         btnCancelar.addActionListener(e -> dispose());
+        JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        botones.add(btnCambiar);
+        botones.add(btnCancelar);
 
         cmbEstaciones.addActionListener(e -> actualizaSensores());
         cmbSensores.addActionListener(e -> actualizaEstadoActual());
@@ -56,13 +73,23 @@ public class VentanaCambiarEstadoSensor extends JDialog {
         JPanel contenido = new JPanel(new BorderLayout(0, 6));
         contenido.setBorder(BorderFactory.createEmptyBorder(10, 10, 6, 10));
         contenido.add(formulario, BorderLayout.CENTER);
-        contenido.add(VentanaPrincipal.panelBotones(btnCambiar, btnCancelar), BorderLayout.SOUTH);
+        contenido.add(botones, BorderLayout.SOUTH);
         setContentPane(contenido);
-        VentanaPrincipal.configuraDialogo(this, owner, btnCambiar);
+
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        getRootPane().setDefaultButton(btnCambiar);
+        pack();
+        setLocationRelativeTo(owner);
     }
 
     private void actualizaSensores() {
-        VentanaPrincipal.llenaSensores(this, cmbEstaciones, cmbSensores);
+        String[] codigos = new String[0];
+        try {
+            codigos = instituto.getCodigosSensores((String) cmbEstaciones.getSelectedItem());
+        } catch (MeteorologiaException e) {
+            mostrarError(e.getMessage());
+        }
+        cmbSensores.setModel(new DefaultComboBoxModel<String>(codigos));
         actualizaEstadoActual();
     }
 
@@ -73,9 +100,9 @@ public class VentanaCambiarEstadoSensor extends JDialog {
             return;
         }
         try {
-            lblEstadoActual.setText(InstitutoMeteorologia.getInstance().getDatosSensor((String) cmbEstaciones.getSelectedItem(), sensor)[2]);
+            lblEstadoActual.setText(instituto.getDatosSensor((String) cmbEstaciones.getSelectedItem(), sensor)[2]);
         } catch (MeteorologiaException e) {
-            VentanaPrincipal.mostrarError(this, e.getMessage());
+            mostrarError(e.getMessage());
         }
     }
 
@@ -83,16 +110,24 @@ public class VentanaCambiarEstadoSensor extends JDialog {
         String estacion = (String) cmbEstaciones.getSelectedItem();
         String sensor = (String) cmbSensores.getSelectedItem();
         if (sensor == null) {
-            VentanaPrincipal.mostrarInformacion(this, "Cambiar estado de sensor", "La estación " + estacion + " no tiene sensores instalados.");
+            mostrarInformacion("La estación " + estacion + " no tiene sensores.");
             return;
         }
         Estado nuevo = Estado.valueOf(grupoEstados.getSelection().getActionCommand());
         try {
-            InstitutoMeteorologia.getInstance().cambiaEstadoSensor(estacion, sensor, nuevo);
-            VentanaPrincipal.mostrarInformacion(this, "Cambiar estado de sensor", "Estado del sensor " + sensor + " actualizado a " + nuevo + ".");
+            instituto.cambiaEstadoSensor(estacion, sensor, nuevo);
+            mostrarInformacion("Estado del sensor " + sensor + " actualizado a " + nuevo + ".");
             actualizaEstadoActual();
         } catch (MeteorologiaException e) {
-            VentanaPrincipal.mostrarError(this, e.getMessage());
+            mostrarError(e.getMessage());
         }
+    }
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void mostrarInformacion(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, getTitle(), JOptionPane.INFORMATION_MESSAGE);
     }
 }
